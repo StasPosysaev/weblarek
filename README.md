@@ -98,3 +98,77 @@ Presenter - презентер содержит основную логику п
 `emit<T extends object>(event: string, data?: T): void` - инициализация события. При вызове события в метод передается название события и объект с данными, который будет использован как аргумент для вызова обработчика.  
 `trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void` - возвращает функцию, при вызове которой инициализируется требуемое в параметрах событие с передачей в него данных из второго параметра.
 
+### Данные
+
+#### Интерфейсы данных 
+`interface IProduct {}` - интерфейс для учёта товаров которые будут использоваться в приложении.
+
+`interface IBayer {}` - данные покупателя, необходимые для оформления заказа.
+
+#### Модели данных 
+
+##### Класс CatalogModel 
+Управляет данными каталога товаров и выбранными карточками для просмотра.
+
+Конструктор:
+`constructor(events: EventEmitter)` - брокер событий.
+
+Поля класса:
+`_items: IProduct[]` - массив товаров каталога.
+`_selectedItem: IProduct | null` - выбранная карточка товара.
+
+Методы:
+`getItems(): IProduct[]` - получить список товаров.
+`setSelectedItem(item: IProduct): void` - сохранить выбранную карточку.
+`getSelectedItem(): IProduct | null` - получить выбранную карточку.
+`setItems(items: IProduct[]): void` - сохранить массив товаров.
+
+##### Класс BasketModel
+Управляет товарами в корзине покупок.
+
+Конструктор:
+`constructor(events: EventEmitter)` - создает экземпляр модели корзины.
+
+Поля класса:
+`_items: IProduct[]` - массив товаров в корзине.
+
+Методы:
+`addItem(item: IProduct): void` - добавлять товар.
+`removeItem(id: string): void` - удалять товар.
+`getCount(): number` - получить количество товаров.
+`getItems(): IProduct[]` - получить список товаров.
+`getTotal(): number` - получить сумму стоимости товаров.
+`contains(id: string): boolean` - узнать наличие товара.
+
+##### Класс CustomerModel
+Управляет данными покупателя и их валидацией.
+
+Конструктор: 
+`constructor(events: EventEmitter)` - создает экземпляр модели данных покупателя.
+
+Поля класса:
+`_payment: TPayment | null` - способ оплаты.
+`_address: string` - адрес доставки.
+`_email: string` - электронная почта.
+`_phone: string` - телефон.
+
+Методы:
+`validate(): ValidationResult` - проверка данных.
+`getData(): IBuyer` - получение данных.
+`setPayment(payment: TPayment): void` - сохранить способ оплаты.
+`setAddress(address: string): void` - сохранить адрес.
+`setEmail(email: string): void` - сохранить email.
+`setPhone(phone: string): void` - сохранить телефон.
+`clear(): void` - очистка данных.
+
+#### Слой коммуникации
+
+##### Класс WebLarekAPI
+Отвечает за взаимодействие с backend API магазина. Инкапсулирует логику выполнения HTTP-запросов для получения товаров и оформления заказов.
+
+Конструктор:
+`constructor(baseApi: IApi)` - объект для выполнения HTTP-запросов, соответствующий интерфейсу IApi.
+
+Методы: 
+`getProductList(): Promise<IProduct[]> ` - выполняет GET запрос для получения списка товаров.
+`createOrder(order: IOrder): Promise<OrderResult>` - выполняет POST запрос для оформления заказа.
