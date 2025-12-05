@@ -24,4 +24,8 @@ export class CatalogModel {
   getSelectedItem(): IProduct | null {
     return this._selectedItem;
   }
+
+  getItem(id: string): IProduct | undefined {
+    return this._items.find(item => item.id === id);
+}
 }

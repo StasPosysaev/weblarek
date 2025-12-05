@@ -43,3 +43,49 @@ export interface IOrder extends IBuyer {
 export interface ProductListResponse {
     items: IProduct[];
 }
+
+export interface CatalogCardData {
+    id: string;
+    title: string;
+    image: string;
+    category: string;
+    price: number | null;
+}
+
+export interface PreviewCardData extends CatalogCardData {
+    description: string;
+    inBasket: boolean;
+}
+
+export interface BasketCardData {
+    id: string;
+    title: string;
+    price: number | null;
+    index: number;
+}
+
+export interface BasketViewData {
+    items: BasketCardData[];
+    total: number;
+    isEmpty: boolean;
+}
+
+export interface HeaderData {
+    counter: number;
+}
+
+export interface OrderFormData {
+    payment: TPayment;
+    address: string;
+    errors?: { payment?: string; address?: string };
+}
+
+export interface ContactsFormData {
+    email: string;
+    phone: string;
+    errors?: { email?: string; phone?: string };
+}
+
+export interface SuccessData {
+    total: number;
+}
