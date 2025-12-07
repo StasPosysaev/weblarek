@@ -3,7 +3,7 @@ import { Component } from '../base/Component';
 export class Modal extends Component<{}> {
     private contentElement: HTMLElement;
     private closeButton: HTMLButtonElement;
-    private currentContent: HTMLElement | null = null;
+    
 
     constructor(container: HTMLElement) {
         super(container);
@@ -22,7 +22,6 @@ export class Modal extends Component<{}> {
     open(content?: HTMLElement): void {
         if (content) {
             this.contentElement.replaceChildren(content);
-            this.currentContent = content;
         }
         this.container.classList.add('modal_active');
     }
@@ -30,6 +29,5 @@ export class Modal extends Component<{}> {
     close(): void {
         this.container.classList.remove('modal_active');
         this.contentElement.innerHTML = '';
-        this.currentContent = null;
     }
 }
