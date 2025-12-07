@@ -10,40 +10,27 @@ export class PreviewCard extends Card<PreviewCardData> {
     private categoryElement: HTMLElement;
     private titleElement: HTMLElement;
     private imageElement: HTMLImageElement;
-    private currentId: string = '';
 
     constructor(container: HTMLElement, events: EventEmitter) {
         super(container, events);
 
-        this.descriptionElement = container.querySelector('.card__text')!;
-        this.buttonElement = container.querySelector('.card__button')!;
-        this.priceElement = container.querySelector('.card__price')!;
-        this.categoryElement = container.querySelector('.card__category')!;
-        this.titleElement = container.querySelector('.card__title')!;
-        this.imageElement = container.querySelector('.card__image')! as HTMLImageElement;
+        this.descriptionElement = this.container.querySelector('.card__text')!;
+        this.buttonElement = this.container.querySelector('.card__button')!;
+        this.priceElement = this.container.querySelector('.card__price')!;
+        this.categoryElement = this.container.querySelector('.card__category')!;
+        this.titleElement = this.container.querySelector('.card__title')!;
+        this.imageElement = this.container.querySelector('.card__image')! as HTMLImageElement;
 
         this.buttonElement.addEventListener('click', () => {
-            if (this.currentId) {
+            const id = this.container.dataset.id;
+            if (id) {
                 if (this.buttonElement.textContent === 'В корзину') {
-                    this.events.emit('card:add', { id: this.currentId });
+                    this.events.emit('card:add', { id });
                 } else {
-                    this.events.emit('card:remove', { id: this.currentId });
+                    this.events.emit('card:remove', { id });
                 }
             }
         });
-    }
-
-    render(data?: PreviewCardData): HTMLElement {
-        if (data) {
-            this.currentId = data.id;
-            this.category = data.category;
-            this.title = data.title;
-            this.image = data.image;
-            this.description = data.description;
-            this.inBasket = data.inBasket;
-            this.price = data.price;
-        }
-        return this.container;
     }
 
     set description(value: string) {
@@ -57,13 +44,8 @@ export class PreviewCard extends Card<PreviewCardData> {
     }
 
     set price(value: number | null) {
-        this.priceElement.textContent = this.formatPrice(value);
+        this.setPrice(value, this.priceElement);
         this.setButtonState(this.buttonElement, value);
-        
-        if (value !== null && !this.buttonElement.disabled) {
-            const isDeleteButton = this.buttonElement.textContent === 'Удалить из корзины';
-            this.buttonElement.textContent = isDeleteButton ? 'Удалить из корзины' : 'В корзину';
-        }
     }
 
     set category(value: string) {
@@ -71,10 +53,14 @@ export class PreviewCard extends Card<PreviewCardData> {
     }
 
     set title(value: string) {
-        this.titleElement.textContent = value;
+        this.setTitle(value, this.titleElement);
     }
 
     set image(value: string) {
-        this.setImage(this.imageElement, CDN_URL + value, this.title);
+        this.setImage(this.imageElement, CDN_URL + value, this.titleElement.textContent || '');
+    }
+
+    set id(value: string) {
+        this.container.dataset.id = value;
     }
 }

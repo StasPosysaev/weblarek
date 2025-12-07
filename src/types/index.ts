@@ -65,7 +65,7 @@ export interface BasketCardData {
 }
 
 export interface BasketViewData {
-    items: BasketCardData[];
+    items: HTMLElement[];
     total: number;
     isEmpty: boolean;
 }

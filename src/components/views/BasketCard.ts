@@ -1,37 +1,27 @@
 import { Card } from './Card';
-import { BasketCardData } from '../../types';
 import { EventEmitter } from '../base/Events';
+import { BasketCardData } from '../../types';
 
 export class BasketCard extends Card<BasketCardData> {
     private indexElement: HTMLElement;
     private titleElement: HTMLElement;
     private priceElement: HTMLElement;
     private deleteButton: HTMLButtonElement;
-    private currentId: string = '';
 
     constructor(container: HTMLElement, events: EventEmitter) {
         super(container, events);
 
-        this.indexElement = container.querySelector('.basket__item-index')!;
-        this.titleElement = container.querySelector('.card__title')!;
-        this.priceElement = container.querySelector('.card__price')!;
-        this.deleteButton = container.querySelector('.basket__item-delete')!;
+        this.indexElement = this.container.querySelector('.basket__item-index')!;
+        this.titleElement = this.container.querySelector('.card__title')!;
+        this.priceElement = this.container.querySelector('.card__price')!;
+        this.deleteButton = this.container.querySelector('.basket__item-delete')!;
 
         this.deleteButton.addEventListener('click', () => {
-            if (this.currentId) {
-                this.events.emit('basket:remove', { id: this.currentId });
+            const id = this.container.dataset.id;
+            if (id) {
+                this.events.emit('basket:remove', { id });
             }
         });
-    }
-
-    render(data?: BasketCardData): HTMLElement {
-        if (data) {
-            this.currentId = data.id;
-            this.index = data.index;
-            this.title = data.title;
-            this.price = data.price;
-        }
-        return this.container;
     }
 
     set index(value: number) {
@@ -39,10 +29,14 @@ export class BasketCard extends Card<BasketCardData> {
     }
 
     set title(value: string) {
-        this.titleElement.textContent = value;
+        this.setTitle(value, this.titleElement);
     }
 
     set price(value: number | null) {
-        this.priceElement.textContent = this.formatPrice(value);
+        this.setPrice(value, this.priceElement);
+    }
+
+    set id(value: string) {
+        this.container.dataset.id = value;
     }
 }

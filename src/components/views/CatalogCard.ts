@@ -8,7 +8,6 @@ export class CatalogCard extends Card<CatalogCardData> {
     private titleElement: HTMLElement;
     private imageElement: HTMLImageElement;
     private priceElement: HTMLElement;
-    private currentId: string = '';
 
     constructor(container: HTMLElement, events: EventEmitter) {
         super(container, events);
@@ -19,21 +18,11 @@ export class CatalogCard extends Card<CatalogCardData> {
         this.priceElement = this.container.querySelector('.card__price')!;
 
         this.container.addEventListener('click', () => {
-            if (this.currentId) {
-                this.events.emit('card:select', { id: this.currentId });
+            const id = this.container.dataset.id;
+            if (id) {
+                this.events.emit('card:select', { id });
             }
         });
-    }
-
-    render(data?: CatalogCardData): HTMLElement {
-        if (data) {
-            this.currentId = data.id;
-            this.category = data.category;
-            this.title = data.title;
-            this.image = data.image;
-            this.price = data.price;
-        }
-        return this.container;
     }
 
     set category(value: string) {
@@ -41,7 +30,7 @@ export class CatalogCard extends Card<CatalogCardData> {
     }
 
     set title(value: string) {
-        this.titleElement.textContent = value;
+        this.setTitle(value, this.titleElement);
     }
 
     set image(value: string) {
@@ -49,6 +38,10 @@ export class CatalogCard extends Card<CatalogCardData> {
     }
 
     set price(value: number | null) {
-        this.priceElement.textContent = this.formatPrice(value);
+        this.setPrice(value, this.priceElement);
+    }
+
+    set id(value: string) {
+        this.container.dataset.id = value;
     }
 }

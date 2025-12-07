@@ -1,7 +1,6 @@
 import { Component } from '../base/Component';
 import { EventEmitter } from '../base/Events';
-import { BasketViewData, BasketCardData } from '../../types';
-import { BasketCard } from './BasketCard';
+import { BasketViewData } from '../../types';
 
 export class BasketView extends Component<BasketViewData> {
     private listElement: HTMLElement;
@@ -11,9 +10,9 @@ export class BasketView extends Component<BasketViewData> {
     constructor(container: HTMLElement, protected events: EventEmitter) {
         super(container);
 
-        this.listElement = container.querySelector('.basket__list')!;
-        this.totalElement = container.querySelector('.basket__price')!;
-        this.orderButton = container.querySelector('.basket__button')!;
+        this.listElement = this.container.querySelector('.basket__list')!;
+        this.totalElement = this.container.querySelector('.basket__price')!;
+        this.orderButton = this.container.querySelector('.basket__button')!;
 
         this.orderButton.addEventListener('click', () => {
             this.events.emit('basket:order');
@@ -21,6 +20,7 @@ export class BasketView extends Component<BasketViewData> {
     }
 
     render(data?: BasketViewData): HTMLElement {
+        super.render(data);
         if (data) {
             this.items = data.items;
             this.total = data.total;
@@ -29,7 +29,7 @@ export class BasketView extends Component<BasketViewData> {
         return this.container;
     }
 
-    set items(value: BasketCardData[]) {
+    set items(value: HTMLElement[]) {
         this.listElement.innerHTML = '';
         
         if (value.length === 0) {
@@ -38,15 +38,7 @@ export class BasketView extends Component<BasketViewData> {
             emptyMessage.textContent = 'Корзина пуста';
             this.listElement.appendChild(emptyMessage);
         } else {
-            value.forEach((itemData, index) => {
-                const template = document.querySelector('#card-basket') as HTMLTemplateElement;
-                const cardElement = template.content.cloneNode(true) as HTMLElement;
-                const cardContainer = cardElement.firstElementChild as HTMLElement;
-                
-                const card = new BasketCard(cardContainer, this.events);
-                card.render({ ...itemData, index: index + 1 });
-                this.listElement.appendChild(cardContainer);
-            });
+            value.forEach(item => this.listElement.appendChild(item));
         }
     }
 

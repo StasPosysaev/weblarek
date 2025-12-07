@@ -14,10 +14,23 @@ export abstract class Card<T> extends Component<T> {
         return price === null ? 'Бесценно' : `${price} синапсов`;
     }
 
+    protected setPrice(value: number | null, element: HTMLElement): void {
+        element.textContent = this.formatPrice(value);
+    }
+
+    protected setTitle(value: string, element: HTMLElement): void {
+        element.textContent = value;
+    }
+
     protected setCategory(element: HTMLElement, category: string): void {
         element.textContent = category;
         const categoryClass = categoryMap[category as keyof typeof categoryMap];
         element.className = `card__category ${categoryClass || ''}`;
+    }
+
+    protected setImage(element: HTMLImageElement, src: string, alt: string): void {
+        element.src = src;
+        element.alt = alt || '';
     }
 
     protected setButtonState(button: HTMLButtonElement, price: number | null): void {
@@ -25,9 +38,5 @@ export abstract class Card<T> extends Component<T> {
             button.textContent = 'Недоступно';
             button.disabled = true;
         }
-    }
-
-    render(): HTMLElement {
-        return this.container;
     }
 }

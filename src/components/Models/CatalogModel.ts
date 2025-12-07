@@ -1,5 +1,5 @@
-import { EventEmitter } from "../Events";
-import { IProduct } from "../../../types";
+import { EventEmitter } from "../base/Events";
+import { IProduct } from "../../types";
 
 export class CatalogModel {
   private _items: IProduct[] = [];

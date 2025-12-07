@@ -382,6 +382,42 @@ Presenter - презентер содержит основную логику п
 `close(): void` - закрывает модальное окно.
 `render(): HTMLElement` - возвращает контейнер модального окна.
 
+##### Класс GalleryView
+Отображает галерею товаров на главной странице.
+
+Конструктор:
+`constructor(container: HTMLElement, events: EventEmitter, cardTemplate: HTMLTemplateElement)` - принимает контейнер галереи, брокер событий и шаблон карточки товара.
+
+Поля класса:
+`private events: EventEmitter` - брокер событий.
+`private cardTemplate: HTMLTemplateElement` - шаблон карточки товара.
+
+Методы класса:
+`renderProducts(products: IProduct[]): void` - отображает список товаров в галерее.
+
+Генерируемые события:
+Через дочерние компоненты CatalogCard генерирует `card:select` - при выборе товара.
+
+##### Класс BasketItemsService
+Сервис для генерации элементов списка товаров в корзине.
+  
+Конструктор:
+`constructor(template: HTMLTemplateElement, events: EventEmitter)` - принимает шаблон карточки товара и брокер событий.
+  
+Поля класса:
+`private template: HTMLTemplateElement` - шаблон карточки товара в корзине.
+`private events: EventEmitter` - брокер событий.
+  
+Методы класса:
+`generate(items: IProduct[]): HTMLElement[]` - генерирует массив DOM-элементов карточек товаров.
+  
+Используемые компоненты:
+`BasketCard` - для создания интерактивных карточек товаров.
+  
+Генерируемые события через дочерние компоненты:
+`basket:remove` - при удалении товара из корзины.
+ 
+
 #### События приложения
 
 ##### События от моделей данных:

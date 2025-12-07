@@ -10,22 +10,15 @@ export abstract class Form<T> extends Component<T> {
         super(container);
         this.events = events;
         
-        this.submitButton = container.querySelector('button[type="submit"]')!;
-        this.errorsElement = container.querySelector('.form__errors')!;
+        this.submitButton = this.container.querySelector('button[type="submit"]')!;
+        this.errorsElement = this.container.querySelector('.form__errors')!;
         
-        container.addEventListener('submit', (event) => {
+        this.container.addEventListener('submit', (event) => {
             event.preventDefault();
-            if (this.validate()) {
-                this.handleSubmit();
-            }
-        });
-        
-        container.addEventListener('input', () => {
-            this.events.emit('form:input');
+            this.handleSubmit();
         });
     }
     
-    protected abstract validate(): boolean;
     protected abstract handleSubmit(): void;
     
     protected showErrors(errors: Record<string, string>): void {
@@ -33,8 +26,12 @@ export abstract class Form<T> extends Component<T> {
         this.errorsElement.textContent = errorMessages.join(', ');
         this.submitButton.disabled = errorMessages.length > 0;
     }
+
+    updateErrors(errors: Record<string, string>): void {
+        this.showErrors(errors);
+    }
     
-    render(): HTMLElement {
-        return this.container;
+    set errors(value: Record<string, string>) {
+        this.showErrors(value);
     }
 }
