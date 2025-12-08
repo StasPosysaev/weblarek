@@ -21,17 +21,9 @@ export abstract class Form<T> extends Component<T> {
     
     protected abstract handleSubmit(): void;
     
-    protected showErrors(errors: Record<string, string>): void {
-        const errorMessages = Object.values(errors).filter(Boolean);
+    set errors(value: Record<string, string>) {
+        const errorMessages = Object.values(value).filter(Boolean);
         this.errorsElement.textContent = errorMessages.join(', ');
         this.submitButton.disabled = errorMessages.length > 0;
-    }
-
-    updateErrors(errors: Record<string, string>): void {
-        this.showErrors(errors);
-    }
-    
-    set errors(value: Record<string, string>) {
-        this.showErrors(value);
     }
 }

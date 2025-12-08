@@ -1,47 +1,41 @@
 import { Card } from './Card';
-import { CatalogCardData } from '../../types';
+import { IProduct } from '../../types';
+import { ICardActions } from '../../types';
+import { categoryMap } from '../../utils/constants';
+import { ensureElement } from '../../utils/utils';
 import { CDN_URL } from '../../utils/constants';
-import { EventEmitter } from '../base/Events';
 
-export class CatalogCard extends Card<CatalogCardData> {
-    private categoryElement: HTMLElement;
-    private titleElement: HTMLElement;
-    private imageElement: HTMLImageElement;
-    private priceElement: HTMLElement;
+export type TCatalogCard = Pick<IProduct, 'image' | 'category' | 'title' | 'price'>;
 
-    constructor(container: HTMLElement, events: EventEmitter) {
-        super(container, events);
+export class CatalogCard extends Card<TCatalogCard> {
+    protected categoryElement: HTMLElement;
+    protected imageElement: HTMLImageElement;
 
-        this.categoryElement = this.container.querySelector('.card__category')!;
-        this.titleElement = this.container.querySelector('.card__title')!;
-        this.imageElement = this.container.querySelector('.card__image')!;
-        this.priceElement = this.container.querySelector('.card__price')!;
+    constructor(container: HTMLElement, actions?: ICardActions) {
+        super(container);
 
-        this.container.addEventListener('click', () => {
-            const id = this.container.dataset.id;
-            if (id) {
-                this.events.emit('card:select', { id });
-            }
-        });
+        this.categoryElement = ensureElement<HTMLElement>('.card__category', this.container);
+        this.imageElement = ensureElement<HTMLImageElement>('.card__image', this.container);
+
+        if (actions?.onClick) {
+            this.container.addEventListener('click', actions.onClick);
+        }
     }
 
     set category(value: string) {
-        this.setCategory(this.categoryElement, value);
-    }
-
-    set title(value: string) {
-        this.setTitle(value, this.titleElement);
+        this.categoryElement.textContent = value;
+        
+        Object.values(categoryMap).forEach(className => {
+            this.categoryElement.classList.remove(className);
+        });
+        
+        const categoryClass = categoryMap[value as keyof typeof categoryMap];
+        if (categoryClass) {
+            this.categoryElement.classList.add(categoryClass);
+        }
     }
 
     set image(value: string) {
-        this.setImage(this.imageElement, CDN_URL + value, this.titleElement.textContent || '');
-    }
-
-    set price(value: number | null) {
-        this.setPrice(value, this.priceElement);
-    }
-
-    set id(value: string) {
-        this.container.dataset.id = value;
+        this.setImage(this.imageElement, CDN_URL + value, '');
     }
 }

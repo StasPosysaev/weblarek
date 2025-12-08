@@ -6,7 +6,7 @@ export class ContactsForm extends Form<ContactsFormData> {
     private emailInput: HTMLInputElement;
     private phoneInput: HTMLInputElement;
 
-    constructor(container: HTMLElement, events: EventEmitter) {
+    constructor(protected events: EventEmitter, container: HTMLElement) {
         super(container, events);
 
         this.emailInput = this.container.querySelector('input[name="email"]')!;

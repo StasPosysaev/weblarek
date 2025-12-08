@@ -6,15 +6,17 @@ import { BasketModel } from './components/Models/BasketModel';
 import { CustomerModel } from './components/Models/CustomerModel';
 import { Header } from './components/views/Header';
 import { Modal } from './components/views/Modal';
+import { CatalogCard } from './components/views/CatalogCard';
 import { PreviewCard } from './components/views/PreviewCard';
+import { BasketCard } from './components/views/BasketCard';
 import { BasketView } from './components/views/BasketView';
 import { OrderForm } from './components/views/OrderForm';
 import { ContactsForm } from './components/views/ContactsForm';
 import { SuccessView } from './components/views/SuccessView';
+import { GalleryView } from './components/views/GalleryView';
 import { API_URL } from './utils/constants';
 import { ensureElement, cloneTemplate } from './utils/utils';
-import { BasketItemsService } from './components/views/BasketItemsGenerator';
-import { GalleryView } from './components/views/GalleryView';
+import { ICardActions } from './types';
 
 const events = new EventEmitter();
 
@@ -34,16 +36,14 @@ const orderTemplate = ensureElement<HTMLTemplateElement>('#order');
 const contactsTemplate = ensureElement<HTMLTemplateElement>('#contacts');
 const successTemplate = ensureElement<HTMLTemplateElement>('#success');
 
-const header = new Header(headerElement, events);
+const header = new Header(events, headerElement);
 const modal = new Modal(modalElement);
-const galleryView = new GalleryView(galleryElement, events, cardCatalogTemplate);
-const basketView = new BasketView(cloneTemplate(basketTemplate), events);
-const orderForm = new OrderForm(cloneTemplate(orderTemplate), events);
-const contactsForm = new ContactsForm(cloneTemplate(contactsTemplate), events);
-const successView = new SuccessView(cloneTemplate(successTemplate), events);
-const basketItemsService = new BasketItemsService(cardBasketTemplate, events);
+const galleryView = new GalleryView(galleryElement);
+const basketView = new BasketView(events, cloneTemplate(basketTemplate));
+const orderForm = new OrderForm(events, cloneTemplate(orderTemplate));
+const contactsForm = new ContactsForm(events, cloneTemplate(contactsTemplate));
+const successView = new SuccessView(events, cloneTemplate(successTemplate));
 
-let currentModalView: string | null = null;
 
 const api = new Api(API_URL);
 const webLarekAPI = new WebLarekAPI(api);
@@ -58,33 +58,73 @@ async function loadProducts(): Promise<void> {
 }
 
 function renderBasket(): void {
-    const items = basketItemsService.generate(basketModel.getItems());
-    basketView.items = items;
-    basketView.total = basketModel.getTotal();
-    basketView.isEmpty = items.length === 0;
+    const items = basketModel.getItems().map((product, index) => {
+        const cardActions: ICardActions = {
+            onClick: () => events.emit('basket:remove', { id: product.id })
+        };
+        
+        const card = new BasketCard(cloneTemplate(cardBasketTemplate), cardActions);
+        
+        return card.render({
+            title: product.title,
+            price: product.price,
+            index: index + 1
+        });
+    });
+
+    basketView.render({
+        items: items,
+        total: basketModel.getTotal(),
+        isEmpty: items.length === 0
+    });
 }
+
 
 events.on('catalog:changed', () => {
     const products = catalogModel.getItems();
-    galleryView.renderProducts(products);
+    const itemCards = products.map((product) => {
+        const cardActions: ICardActions = {
+            onClick: () => events.emit('card:select', { id: product.id })
+        };
+        
+        const card = new CatalogCard(cloneTemplate(cardCatalogTemplate), cardActions);
+        
+        return card.render({
+            title: product.title,
+            price: product.price,
+            category: product.category,
+            image: product.image
+        });
+    });
+    
+    galleryView.render({ items: itemCards });
 });
 
 events.on('selection:changed', () => {
     const selectedProduct = catalogModel.getSelectedItem();
     if (!selectedProduct) return;
     
-    const cardElement = cloneTemplate(cardPreviewTemplate);
-    const card = new PreviewCard(cardElement, events);
+    const cardActions: ICardActions = {
+        onClick: () => {
+            if (basketModel.contains(selectedProduct.id)) {
+                events.emit('card:remove', { id: selectedProduct.id });
+            } else {
+                events.emit('card:add', { id: selectedProduct.id });
+            }
+        }
+    };
     
-    card.id = selectedProduct.id;
-    card.title = selectedProduct.title;
-    card.image = selectedProduct.image;
-    card.category = selectedProduct.category;
-    card.price = selectedProduct.price;
-    card.description = selectedProduct.description;
-    card.inBasket = basketModel.contains(selectedProduct.id);
+    const card = new PreviewCard(cloneTemplate(cardPreviewTemplate), cardActions);
     
-    currentModalView = 'preview';
+    const cardElement = card.render({
+        title: selectedProduct.title,
+        price: selectedProduct.price,
+        category: selectedProduct.category,
+        image: selectedProduct.image,
+        description: selectedProduct.description,
+        inBasket: basketModel.contains(selectedProduct.id)
+    });
+    
     modal.open(cardElement);
 });
 
@@ -92,10 +132,6 @@ events.on('basket:changed', () => {
     header.counter = basketModel.getCount();
     
     renderBasket();
-    
-    if (currentModalView === 'basket') {
-        modal.open(basketView.render());
-    }
 });
 
 events.on('customer:changed', () => {
@@ -110,13 +146,17 @@ events.on('customer:changed', () => {
     if (errors.email) contactsErrors.email = errors.email;
     if (errors.phone) contactsErrors.phone = errors.phone;
     
-    orderForm.payment = data.payment; 
-    orderForm.address = data.address;
-    orderForm.updateErrors(orderErrors);
+    orderForm.render({
+        payment: data.payment,
+        address: data.address,
+        errors: orderErrors
+    });
     
-    contactsForm.email = data.email;
-    contactsForm.phone = data.phone;
-    contactsForm.updateErrors(contactsErrors);
+    contactsForm.render({
+        email: data.email,
+        phone: data.phone,
+        errors: contactsErrors
+    });
 });
 
 events.on('card:select', (data: { id: string }) => {
@@ -131,14 +171,12 @@ events.on('card:add', (data: { id: string }) => {
     if (product) {
         basketModel.addItem(product);
         modal.close();
-        currentModalView = null;
     }
 });
 
 events.on('card:remove', (data: { id: string }) => {
     basketModel.removeItem(data.id);
     modal.close();
-    currentModalView = null;
 });
 
 events.on('basket:remove', (data: { id: string }) => {
@@ -146,13 +184,13 @@ events.on('basket:remove', (data: { id: string }) => {
 });
 
 events.on('header:basket', () => {
-    currentModalView = 'basket';
-    modal.open(basketView.render());
+    const basketElement = basketView.render(); 
+    modal.open(basketElement);
 });
 
 events.on('basket:order', () => {
-    currentModalView = 'order';
-    modal.open(orderForm.render());
+    const orderElement = orderForm.render();
+    modal.open(orderElement);
 });
 
 events.on('order.payment:change', (data: { payment: string }) => {
@@ -164,17 +202,8 @@ events.on('order.address:change', (data: { address: string }) => {
 });
 
 events.on('order:submit', () => {
-    const errors = customerModel.validate();
-    
-    if (!errors.payment && !errors.address) {
-        currentModalView = 'contacts';
-        modal.open(contactsForm.render());
-    } else {
-        const orderErrors: Record<string, string> = {};
-        if (errors.payment) orderErrors.payment = errors.payment;
-        if (errors.address) orderErrors.address = errors.address;
-        orderForm.errors = orderErrors;
-    }
+    const contactsElement = contactsForm.render();
+    modal.open(contactsElement);
 });
 
 events.on('contacts.email:change', (data: { email: string }) => {
@@ -186,39 +215,29 @@ events.on('contacts.phone:change', (data: { phone: string }) => {
 });
 
 events.on('contacts:submit', async () => {
-    const errors = customerModel.validate();
+    const order = {
+        ...customerModel.getData(),
+        total: basketModel.getTotal(),
+        items: basketModel.getItems().map(item => item.id)
+    };
     
-    if (!errors.email && !errors.phone) {
-        const order = {
-            ...customerModel.getData(),
-            total: basketModel.getTotal(),
-            items: basketModel.getItems().map(item => item.id)
-        };
+    try {
+        const result = await webLarekAPI.createOrder(order);
+        successView.total = result.total;
         
-        try {
-            const result = await webLarekAPI.createOrder(order);
-            successView.total = result.total;
-            
-            currentModalView = 'success';
-            modal.open(successView.render());
-            
-            basketModel.clear();
-            customerModel.clear();
-            
-        } catch (error) {
-            console.error('Ошибка при оформлении заказа:', error);
-        }
-    } else {
-        const contactsErrors: Record<string, string> = {};
-        if (errors.email) contactsErrors.email = errors.email;
-        if (errors.phone) contactsErrors.phone = errors.phone;
-        contactsForm.errors = contactsErrors;
+        const successElement = successView.render();
+        modal.open(successElement);
+        
+        basketModel.clear();
+        customerModel.clear();
+        
+    } catch (error) {
+        console.error('Ошибка при оформлении заказа:', error);
     }
 });
 
 events.on('success:close', () => {
     modal.close();
-    currentModalView = null;
 });
 
 document.addEventListener('DOMContentLoaded', () => {

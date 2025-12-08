@@ -77,15 +77,25 @@ export interface HeaderData {
 export interface OrderFormData {
     payment: TPayment;
     address: string;
-    errors?: { payment?: string; address?: string };
+    errors?: Record<string, string>;
 }
 
 export interface ContactsFormData {
     email: string;
     phone: string;
-    errors?: { email?: string; phone?: string };
+    errors?: Record<string, string>;
 }
 
 export interface SuccessData {
     total: number;
+}
+
+export interface ICardActions {
+    onClick?: () => void;
+    onToggle?: () => void;
+    onDelete?: () => void;
+}
+
+export interface GalleryViewData {
+    items: HTMLElement[];
 }

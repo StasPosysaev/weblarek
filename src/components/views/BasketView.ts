@@ -7,7 +7,7 @@ export class BasketView extends Component<BasketViewData> {
     private totalElement: HTMLElement;
     private orderButton: HTMLButtonElement;
 
-    constructor(container: HTMLElement, protected events: EventEmitter) {
+    constructor(protected events: EventEmitter, container: HTMLElement) {
         super(container);
 
         this.listElement = this.container.querySelector('.basket__list')!;
@@ -17,16 +17,6 @@ export class BasketView extends Component<BasketViewData> {
         this.orderButton.addEventListener('click', () => {
             this.events.emit('basket:order');
         });
-    }
-
-    render(data?: BasketViewData): HTMLElement {
-        super.render(data);
-        if (data) {
-            this.items = data.items;
-            this.total = data.total;
-            this.isEmpty = data.isEmpty;
-        }
-        return this.container;
     }
 
     set items(value: HTMLElement[]) {

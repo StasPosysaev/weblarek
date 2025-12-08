@@ -6,7 +6,7 @@ export class SuccessView extends Component<SuccessData> {
     private descriptionElement: HTMLElement;
     private closeButton: HTMLButtonElement;
 
-    constructor(container: HTMLElement, protected events: EventEmitter) {
+    constructor(protected events: EventEmitter, container: HTMLElement) {
         super(container);
 
         this.descriptionElement = container.querySelector('.order-success__description')!;

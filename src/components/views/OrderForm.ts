@@ -6,7 +6,7 @@ export class OrderForm extends Form<OrderFormData> {
     private paymentButtons: NodeListOf<HTMLButtonElement>;
     private addressInput: HTMLInputElement;
 
-    constructor(container: HTMLElement, events: EventEmitter) {
+    constructor(protected events: EventEmitter, container: HTMLElement) {
         super(container, events);
 
         this.paymentButtons = this.container.querySelectorAll('.button_alt');
